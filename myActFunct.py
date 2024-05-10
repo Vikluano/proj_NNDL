@@ -1,5 +1,4 @@
 import numpy as np
-#Identità e tangente
 
 # Matrix -> input
 def identity(matrix, der=0):
