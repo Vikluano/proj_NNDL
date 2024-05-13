@@ -42,5 +42,79 @@ def getInfo(net):
     print("Number of hidden layers: ", hidden_layers)
     print("Number of hidden neurons: ", [net["Weights"][layer].shape[0] for layer in range(0, hidden_layers)])
     print("Number of output neurons: ", net["W"][(net["Depth"] - 1)].shape[0])
-    print("Weights shape: ", [net["W"][i].shape for i in range(0, (1 + hidden_layers + 1) - 1)])
+    print("Weights shape: ", [net["Weights"][i].shape for i in range(0, (1 + hidden_layers + 1) - 1)])
     print("Activation shape: ", [(net["ActFun"][i]).__name__ for i in range(0, net["Depth"])])
+
+def getBiasesList(net):
+    return net['Biases']
+
+def getWeightsList(net):
+    return net['Weights']
+
+def getActFunList(net):
+    return net['ActFun']
+
+def forwardPropagation(net, X):
+    B = getBiasesList(net)
+    W = getWeightsList(net)
+    AF = getActFunList(net)
+    d = net['Depth']
+    res = X
+
+    for layer in range(d):
+        ith_layer = np.matmul(W[layer], res) + B[layer]
+        res = AF[layer](ith_layer)
+
+    return res
+
+def trainForwardPropagation(net, X):
+    B = getBiasesList(net)
+    W = getWeightsList(net)
+    AF = getActFunList(net)
+    d = net['Depth']
+    ith_layer = []
+    res = []
+    der_act = []
+    res.append(X)
+
+    for layer in range(d):
+        ith_layer.append(np.matmul(W[layer], res[layer]) + B[layer])
+        a, da = AF[layer](ith_layer[layer], 1)
+        der_act.append(da)
+        res.append(a)
+
+    return res, der_act
+
+def backPropagation(net, X, Y_true, err_funct):
+    W = getWeightsList(net)
+    d = net['Depth']
+    X_list, X_der_list = trainForwardPropagation(net, X)
+    delta_list = []
+    delta_list.append(err_funct(X_list[-1], Y_true, 1) * X_der_list[-1])
+    
+    for layer in range(d-1, 0, -1):
+        delta = X_der_list[layer-1] * np.matmul(W[layer].transpose(), delta_list[0])
+        delta_list.insert(0, delta)
+
+    weight_der = []
+    bias_der = []
+
+    for layer in range(0, d):
+        der_w = np.matmul(delta_list[layer], X_list[layer].transpose())
+        weight_der.append(der_w)
+        bias_der.append(np.sum(delta_list[layer], 1, keepdims=True))
+    
+    return weight_der, bias_der
+
+def trainBackPropagation(net):
+    pass
+
+def networkAccuracy(Y, Y_true):
+    tot = Y_true.shape[1]
+    true_positive = 0
+    for i in range(0, tot):
+        true_label = np.argmax(Y_true[:, i])
+        y_label = np.argmax(Y[:, i])
+        if true_label == y_label:
+            true_positive += 1
+    return true_positive / tot
