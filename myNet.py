@@ -106,8 +106,42 @@ def backPropagation(net, X, Y_true, err_funct):
     
     return weight_der, bias_der
 
-def trainBackPropagation(net):
-    pass
+def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=0, eta=0.1):
+    err_train = []
+    err_val = []
+    Y_t_fp = forwardPropagation(net, X_t)
+    training_error = err_funct(Y_t_fp, Y_t)
+    err_train.append(training_error)
+    Y_v_fp = forwardPropagation(net, X_v)
+    validation_error = err_funct(Y_v_fp, Y_v)
+    err_val.append(validation_error)
+    
+    d = net['Depth']
+    epoch = 0
+
+    while epoch < n_epoch:
+        der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
+        
+        for layer in range(d):
+            net['Weights'][layer] = net['Weights'][layer] - eta * der_weights[layer]
+            net['Biases'][layer] = net['Biases'][layer] - eta * der_biases[layer]
+
+        Y_t_fp = forwardPropagation(net, X_t)
+        training_error = err_funct(Y_t_fp, Y_t)
+        err_train.append(training_error)
+        Y_v_fp = forwardPropagation(net, X_v)
+        validation_error = err_funct(Y_v_fp, Y_v)
+        err_val.append(validation_error)
+
+        epoch += 1
+
+        # Eventualmente aggiungere if
+        print("Epoch: ", epoch, "Training error: ", training_error,
+            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error: ", validation_error,
+            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+
+    return err_train, err_val
 
 def networkAccuracy(Y, Y_true):
     tot = Y_true.shape[1]
