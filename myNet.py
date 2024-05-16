@@ -11,7 +11,7 @@ def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
     if np.isscalar(hidden_size):
         hidden_size = [hidden_size]
 
-    for layer in hidden_size:
+    for layer in hidden_size: #aggiungere passo iniziale al range for
         biases.append(sigma * np.random.normal(size = [layer, 1]))
         weights.append(sigma * np.random.normal(size = [layer, prev_layer]))
         prev_layer = layer
@@ -125,6 +125,51 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=0, eta=0.1)
         for layer in range(d):
             net['Weights'][layer] = net['Weights'][layer] - eta * der_weights[layer]
             net['Biases'][layer] = net['Biases'][layer] - eta * der_biases[layer]
+
+        Y_t_fp = forwardPropagation(net, X_t)
+        training_error = err_funct(Y_t_fp, Y_t)
+        err_train.append(training_error)
+        Y_v_fp = forwardPropagation(net, X_v)
+        validation_error = err_funct(Y_v_fp, Y_v)
+        err_val.append(validation_error)
+
+        epoch += 1
+
+        # Eventualmente aggiungere if
+        print("Epoch: ", epoch, "Training error: ", training_error,
+            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error: ", validation_error,
+            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+
+    return err_train, err_val
+
+def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=0, alpha=1.2, beta=0.5):
+    err_train = []
+    err_val = []
+    Y_t_fp = forwardPropagation(net, X_t)
+    training_error = err_funct(Y_t_fp, Y_t)
+    err_train.append(training_error)
+    Y_v_fp = forwardPropagation(net, X_v)
+    validation_error = err_funct(Y_v_fp, Y_v)
+    err_val.append(validation_error)
+    
+    d  = net['Depth']
+    epoch = 0
+    eta_ij = eta * d
+
+    while epoch < n_epoch:
+        der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
+        
+        for layer in range(d):
+            neurons = net['Weights'][layer].size
+            for n in range(neurons):
+                if net['Weights'][layer][n] > 0:
+                    eta_ij = min(eta_ij*alpha, eta_pos)
+                elif net['Weights'][layer][n] < 0:
+                    eta_ij = max(eta_ij*beta, eta_neg)
+                
+                net['Weights'][layer][n] = net['Weights'][layer][n] - (eta_ij * np.sign(der_weights[layer][n]))
+                net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
 
         Y_t_fp = forwardPropagation(net, X_t)
         training_error = err_funct(Y_t_fp, Y_t)
