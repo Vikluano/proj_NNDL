@@ -197,3 +197,11 @@ def networkAccuracy(Y, Y_true):
         if true_label == y_label:
             true_positive += 1
     return true_positive / tot
+
+def crossValidationKFold(X, Y, err_funct, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
+    combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
+    samples_dim = Y.shape[1]
+    if (samples_dim % k) == 0:
+        pass
+    else:
+        raise Exception("Exception: each fold must be the same size\n")
