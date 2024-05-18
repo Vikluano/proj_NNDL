@@ -1,5 +1,6 @@
 import numpy as np
 import myActFunct as act
+from itertools import product
 
 def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
     sigma = 0.1
