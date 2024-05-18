@@ -203,6 +203,11 @@ def crossValidationKFold(X, Y, err_funct, list_hidden_size=[], list_eta_pos=[], 
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
     if (samples_dim % k) == 0:
-        pass
+        X_partition = np.array_split(X, k, axis=1)
+        Y_partition = np.array_split(Y, k, axis=1)
+        for v in range(k):
+            X_val = X_partition[v]
+            Y_val = Y_partition[v]
+            
     else:
         raise Exception("Exception: each fold must be the same size\n")
