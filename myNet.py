@@ -111,7 +111,7 @@ def backPropagation(net, X, Y_true, err_funct):
     
     return weight_der, bias_der
 
-def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=0, eta=0.1):
+def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1):
     err_train = []
     err_val = []
     Y_t_fp = forwardPropagation(net, X_t)
@@ -148,7 +148,7 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=0, eta=0.1)
 
     return err_train, err_val
 
-def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=0, alpha=1.2, beta=0.5):
+def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=1, alpha=1.2, beta=0.5):
     err_train = []
     err_val = []
     Y_t_fp = forwardPropagation(net, X_t)
@@ -166,15 +166,23 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
         der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
         
         for layer in range(d):
-            neurons = net['Weights'][layer].size
-            for n in range(neurons):
-                if net['Weights'][layer][n] > 0:
-                    eta_ij = min(eta_ij*alpha, eta_pos)
-                elif net['Weights'][layer][n] < 0:
-                    eta_ij = max(eta_ij*beta, eta_neg)
-                
-                net['Weights'][layer][n] = net['Weights'][layer][n] - (eta_ij * np.sign(der_weights[layer][n]))
-                net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
+            neurons = net['Weights'][layer].shape
+            # print('\nPESI: ',net['Weights'])
+            # print('\nPESO DEL LAYER: ',net['Weights'][layer])
+            for n in range(neurons[0]):
+                # print('\nTYPE n: ', type(n))
+                # print('\nBIASES: ',net['Biases'][layer])
+                for i in range(neurons[1]):
+                    # print('\nPESO',net['Weights'][layer][n])
+                    # print('\nTIPO: ',type(net['Weights'][layer][0][0]))
+                    # print('\nPESO con [i]: ', net['Weights'][layer][0][0])
+                    if net['Weights'][layer][n][i] > 0:
+                        eta_ij = min(eta_ij*alpha, eta_pos)
+                    elif net['Weights'][layer][n][i] < 0:
+                        eta_ij = max(eta_ij*beta, eta_neg)
+                    
+                    net['Weights'][layer][n][i] = net['Weights'][layer][n][i] - (eta_ij * np.sign(der_weights[layer][n][i]))
+                    net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
 
         Y_t_fp = forwardPropagation(net, X_t)
         training_error = err_funct(Y_t_fp, Y_t)
