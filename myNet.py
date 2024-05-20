@@ -1,8 +1,10 @@
 import numpy as np
 import myActFunct as act
 from itertools import product
+import matplotlib.pyplot as plt
 
-def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
+# OK
+def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):    
     sigma = 0.1
     biases = []
     weights = []
@@ -24,6 +26,7 @@ def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
     
     return net
 
+# OK, ma si può modificare ;)
 def setActFunct(depth, list_act_funct, act_def=act.tanh):
     if not list_act_funct:
         return [act_def for _ in range(0, depth)]
@@ -36,15 +39,16 @@ def setActFunct(depth, list_act_funct, act_def=act.tanh):
     else:
         raise Exception("Exception: Too many item in the activation function list\n")
     
+# OK, ma si può modificare ;)
 def getInfo(net):
     hidden_layers = net['Depth'] - 1
     print("Depth network: ", net["Depth"])
     print("Number of input neurons: ", net["Weights"][0].shape[1])
     print("Number of hidden layers: ", hidden_layers)
     print("Number of hidden neurons: ", [net["Weights"][layer].shape[0] for layer in range(0, hidden_layers)])
-    print("Number of output neurons: ", net["W"][(net["Depth"] - 1)].shape[0])
+    print("Number of output neurons: ", net["Weights"][(net["Depth"] - 1)].shape[0])
     print("Weights shape: ", [net["Weights"][i].shape for i in range(0, (1 + hidden_layers + 1) - 1)])
-    print("Activation shape: ", [(net["ActFun"][i]).__name__ for i in range(0, net["Depth"])])
+    print("Activation functions: ", [(net["ActFun"][i]).__name__ for i in range(0, net["Depth"])])
 
 def getBiasesList(net):
     return net['Biases']
@@ -199,15 +203,37 @@ def networkAccuracy(Y, Y_true):
             true_positive += 1
     return true_positive / tot
 
-def crossValidationKFold(X, Y, err_funct, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
+def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
+    list_err_train = []
+    list_err_val = []
+    list_net = []
     if (samples_dim % k) == 0:
         X_partition = np.array_split(X, k, axis=1)
         Y_partition = np.array_split(Y, k, axis=1)
         for v in range(k):
             X_val = X_partition[v]
             Y_val = Y_partition[v]
-            
+            X_copy = X_partition.copy()
+            Y_copy = Y_partition.copy()
+            X_train = np.concatenate(X_copy.pop(v))
+            Y_train = np.concatenate(Y_copy.pop(v))
+            for combination in combinations:
+                net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
+                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 10) # !!! 10 = n_epoch
+                list_err_train.append(err_train)
+                list_err_val.append(err_val)
+                list_net.append(net)
+        return list_err_train, list_err_val, combinations, list_net
     else:
         raise Exception("Exception: each fold must be the same size\n")
+    
+def myPlot(list_err_train, list_err_val, combinations):
+    plt.plot(combinations, list_err_train, color='r', label='Train Error')
+    plt.plot(combinations, list_err_val, color='g', label='Validation Error')
+    plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
+    plt.grid(True)
+    plt.legend()
+    plt.title('Hyperparameter Tuning')
+    plt.show()
