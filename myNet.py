@@ -141,10 +141,10 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
         epoch += 1
 
         # Eventualmente aggiungere if
-        print("Epoch: ", epoch, "Training error: ", training_error,
-            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "Validation error: ", validation_error,
-            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+        print("Epoch: ", epoch, "\nTraining error: ", training_error,
+            "\nAccuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "\nValidation error: ", validation_error,
+            "\nAccuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
 
     return err_train, err_val
 
@@ -167,22 +167,21 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
         
         for layer in range(d):
             neurons = net['Weights'][layer].shape
-            # print('\nPESI: ',net['Weights'])
-            # print('\nPESO DEL LAYER: ',net['Weights'][layer])
             for n in range(neurons[0]):
-                # print('\nTYPE n: ', type(n))
-                # print('\nBIASES: ',net['Biases'][layer])
                 for i in range(neurons[1]):
-                    # print('\nPESO',net['Weights'][layer][n])
-                    # print('\nTIPO: ',type(net['Weights'][layer][0][0]))
-                    # print('\nPESO con [i]: ', net['Weights'][layer][0][0])
                     if net['Weights'][layer][n][i] > 0:
                         eta_ij = min(eta_ij*alpha, eta_pos)
                     elif net['Weights'][layer][n][i] < 0:
                         eta_ij = max(eta_ij*beta, eta_neg)
                     
                     net['Weights'][layer][n][i] = net['Weights'][layer][n][i] - (eta_ij * np.sign(der_weights[layer][n][i]))
-                    net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
+                
+                if net['Biases'][layer][n] > 0:
+                        eta_ij = min(eta_ij*alpha, eta_pos)
+                elif net['Biases'][layer][n] < 0:
+                        eta_ij = max(eta_ij*beta, eta_neg)
+                
+                net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
 
         Y_t_fp = forwardPropagation(net, X_t)
         training_error = err_funct(Y_t_fp, Y_t)
@@ -194,10 +193,10 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
         epoch += 1
 
         # Eventualmente aggiungere if
-        print("Epoch: ", epoch, "Training error: ", training_error,
-            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "Validation error: ", validation_error,
-            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+        print("Epoch: ", epoch, "\nTraining error: ", training_error,
+            "\nAccuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "\nValidation error: ", validation_error,
+            "\nAccuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
 
     return err_train, err_val
 
@@ -216,30 +215,39 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
     samples_dim = Y.shape[1]
     list_err_train = []
     list_err_val = []
-    list_net = []
+    s_err_train = 0
+    s_err_val = 0
     if (samples_dim % k) == 0:
         X_partition = np.array_split(X, k, axis=1)
         Y_partition = np.array_split(Y, k, axis=1)
-        for v in range(k):
-            X_val = X_partition[v]
-            Y_val = Y_partition[v]
-            X_copy = X_partition.copy()
-            Y_copy = Y_partition.copy()
-            X_train = np.concatenate(X_copy.pop(v))
-            Y_train = np.concatenate(Y_copy.pop(v))
-            for combination in combinations:
+        for combination in combinations:
+            for v in range(k):
+                X_val = np.array(X_partition[v])
+                Y_val = np.array(Y_partition[v])
+                X_train = X_partition.copy()
+                Y_train = Y_partition.copy()
+                del X_train[v]
+                del Y_train[v]
+                X_train = np.concatenate(X_train, axis=1)
+                Y_train = np.concatenate(Y_train, axis=1)
+                
                 net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
-                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 10) # !!! 10 = n_epoch
-                list_err_train.append(err_train)
-                list_err_val.append(err_val)
-                list_net.append(net)
-        return list_err_train, list_err_val, combinations, list_net
+                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 5) # !!! 10 = n_epoch
+                s_err_train += err_train[-1]
+                s_err_val += err_val[-1]
+            list_err_train.append(s_err_train/k)
+            list_err_val.append(s_err_val/k)
+            
+        return list_err_train, list_err_val, combinations
     else:
-        raise Exception("Exception: each fold must be the same size\n")
+        raise Exception("Exception: each fold must be the same size")
     
 def myPlot(list_err_train, list_err_val, combinations):
-    plt.plot(combinations, list_err_train, color='r', label='Train Error')
-    plt.plot(combinations, list_err_val, color='g', label='Validation Error')
+    x_plot_lab = []
+    for c in combinations:
+        x_plot_lab.append(str(c))
+    plt.plot(x_plot_lab, list_err_train, color='r', label='Train Error')
+    plt.plot(x_plot_lab, list_err_val, color='g', label='Validation Error')
     plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
     plt.grid(True)
     plt.legend()

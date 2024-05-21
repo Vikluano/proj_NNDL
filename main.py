@@ -4,10 +4,10 @@ import myDataset as d
 import myActFunct as a
 import myErrorFunct as ef
 
-net = n.newNetwork(784, 12, 10)
+# net = n.newNetwork(784, 12, 10)
 # n.getInfo(net)
 
-ld = d.loadDataset('C:/Users/Pietro20/Desktop/mnistDataset/')
+ld = d.loadDataset('C:/Users/anton/Downloads/Telegram_Desktop/')
 # print(ld[0].shape)
 # print(ld[1].shape)
 # print(ld[2].shape)
@@ -37,5 +37,11 @@ ld = d.loadDataset('C:/Users/Pietro20/Desktop/mnistDataset/')
 # et, ev = n.trainBackPropagation(net, ld[0], ld[2], ld[1], ld[3], ef.crossEntropy, 20)
 # print('Error train: ', et, '\nError val: ', ev)
 
-et, ev = n.trainResilientPropagation(net, ld[0], ld[2], ld[1], ld[3], ef.crossEntropy)
-print('Error train: ', et, '\nError val: ', ev)
+# et, 5ev = n.trainResilientPropagation(net, ld[0], ld[2], ld[1], ld[3], ef.crossEntropy, n_epoch=20)
+# print('Error train: ', et, '\nError val: ', ev)
+
+res = n.crossValidationKFold(ld[0], ld[2], ef.crossEntropy, 784, 10, list_hidden_size=[[20,30], 20], list_eta_pos=[1, 0.1], list_eta_neg=[0.01, 0.001], k=3)
+
+print('Error train: ', res[0], '\nError val: ', res[1])
+n.myPlot(res[0], res[1], res[2])
+
