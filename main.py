@@ -4,14 +4,27 @@ import myDataset as d
 import myActFunct as a
 import myErrorFunct as ef
 
-def run():
-    train_X, test_X, train_lab, test_lab = d.loadDataset('C:/Users/Pietro20/Desktop/mnistDataset/')
+def run(datapath):
+    train_X, test_X, train_lab, test_lab = d.loadDataset(datapath)
     # ld = d.loadDataset('C:/Users/anton/Downloads/Telegram_Desktop/')
-    list_err_train, list_err_val, combinations = n.crossValidationKFold(train_X, train_lab, ef.crossEntropy, 784, 10, list_hidden_size=[[256, 128], 256], list_eta_pos=[1, 0.1], list_eta_neg=[0.001, 0.0001])
+    list_err_train, list_err_val, combinations = n.crossValidationKFold(train_X, train_lab, ef.crossEntropy, 784, 10, list_hidden_size=[[128, 64], [516, 256]], list_eta_pos=[1, 0.1], list_eta_neg=[0.001, 0.0001])
     n.myPlot(list_err_train, list_err_val, combinations)
 
+def splitDataset(datapath, n=10000):
+    x_data = np.loadtxt(datapath + 'mnist_train.csv', delimiter=',', skiprows=1)
+    y_data = np.loadtxt(datapath + 'mnist_test.csv', delimiter=',', skiprows=1)
+    # x_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_train_10k.csv', delimiter=',')
+    # y_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_test_10k.csv', delimiter=',')
+
+    x_data = x_data[:n]
+    y_data = y_data[:n]
+
+    np.savetxt(datapath + 'mnist_train_10k.csv', x_data, delimiter=',')
+    np.savetxt(datapath + 'mnist_test_10k.csv', y_data, delimiter=',')
+
 if __name__ == '__main__':
-    run()
+    splitDataset(d.data_path_2)
+    run(d.data_path_2)
 
 # net = n.newNetwork(784, 12, 10)
 # n.getInfo(net)
@@ -24,17 +37,7 @@ if __name__ == '__main__':
 # print(ld[3].shape)
 # print(np.max(ld[0]))
 
-def splitDataset(n=10000):
-    x_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_train.csv', delimiter=',')
-    y_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_test.csv', delimiter=',')
-    # x_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_train_10k.csv', delimiter=',')
-    # y_data = np.loadtxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_test_10k.csv', delimiter=',')
 
-    x_data = x_data[:n+1]
-    y_data = y_data[:n+1]
-
-    np.savetxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_train_10k.csv', x_data, delimiter=',')
-    np.savetxt('C:/Users/Pietro20/Desktop/mnistDataset/mnist_test_10k.csv', y_data, delimiter=',')
 
 # print(x_data)
 # print(y_data)

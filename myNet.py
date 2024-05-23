@@ -234,7 +234,7 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
                 Y_train = np.concatenate(Y_train, axis=1)
                 
                 net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
-                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 50) # !!! 10 = n_epoch
+                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 100) # !!! 10 = n_epoch
                 print()
                 print(i, '/', n_combination, ' Combinazioni iperparametri analizzate')
                 print(v+1, '/', k, ' Partizioni analizzate\n')
