@@ -220,6 +220,8 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
     if (samples_dim % k) == 0:
         X_partition = np.array_split(X, k, axis=1)
         Y_partition = np.array_split(Y, k, axis=1)
+        i = 1
+        n_combination = len(combinations)
         for combination in combinations:
             for v in range(k):
                 X_val = np.array(X_partition[v])
@@ -232,11 +234,15 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
                 Y_train = np.concatenate(Y_train, axis=1)
                 
                 net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
-                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 5) # !!! 10 = n_epoch
+                err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 50) # !!! 10 = n_epoch
+                print()
+                print(i, '/', n_combination, ' Combinazioni iperparametri analizzate')
+                print(v+1, '/', k, ' Partizioni analizzate\n')
                 s_err_train += err_train[-1]
                 s_err_val += err_val[-1]
             list_err_train.append(s_err_train/k)
             list_err_val.append(s_err_val/k)
+            i += 1
             
         return list_err_train, list_err_val, combinations
     else:
@@ -246,10 +252,12 @@ def myPlot(list_err_train, list_err_val, combinations):
     x_plot_lab = []
     for c in combinations:
         x_plot_lab.append(str(c))
+    plt.figure(figsize=(18, 10)) 
     plt.plot(x_plot_lab, list_err_train, color='r', label='Train Error')
     plt.plot(x_plot_lab, list_err_val, color='g', label='Validation Error')
     plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
     plt.grid(True)
     plt.legend()
     plt.title('Hyperparameter Tuning')
+    # plt.plot(figsize=(20,10))
     plt.show()
