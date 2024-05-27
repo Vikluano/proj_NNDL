@@ -4,8 +4,8 @@ data_path_1 = 'C:/Users/Pietro20/Desktop/'
 data_path_2 = 'C:/Users/anton/Downloads/Telegram_Desktop/'
 
 def loadDataset(datapath='C:/Users/Pietro20/Desktop/'):
-    train_set = np.loadtxt(datapath + "mnist_train_10k.csv", delimiter=',')
-    test_set = np.loadtxt(datapath + "mnist_test_10k.csv", delimiter=',')
+    train_set = np.loadtxt(datapath + "mnist_train.csv", delimiter=',', skiprows=1)
+    test_set = np.loadtxt(datapath + "mnist_test.csv", delimiter=',', skiprows=1)
     # train_set = np.loadtxt(datapath + "mnist_sample_train.csv", delimiter=',')
     # test_set = np.loadtxt(datapath + "mnist_sample_test.csv", delimiter=',')
 
