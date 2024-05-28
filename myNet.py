@@ -124,6 +124,11 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
     d = net['Depth']
     epoch = 0
 
+    print("Epoch: ", epoch, "Training error: ", training_error,
+            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error: ", validation_error,
+            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+
     while epoch < n_epoch:
         der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
         
@@ -141,11 +146,13 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
         epoch += 1
 
         # Eventualmente aggiungere if
-        print("Epoch: ", epoch, "\nTraining error: ", training_error,
-            "\nAccuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "\nValidation error: ", validation_error,
-            "\nAccuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
-
+        print("Epoch: ", epoch, "Training error: ", training_error,
+            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error: ", validation_error,
+            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v), end='')
+        print('\r', end='') 
+    print()
+    
     return err_train, err_val
 
 # modified RProp
@@ -173,6 +180,11 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
     d  = net['Depth']
     epoch = 0
     eta_ij = eta * d  # Inizializziamo eta_ij per ogni layer
+
+    print("Epoch: ", epoch, "Training error: ", training_error,
+            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error: ", validation_error,
+            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
 
     while epoch < n_epoch:
         der_weights, der_biases = backPropagation(net, X_t, Y_t, err_funct)
@@ -203,23 +215,21 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
         Y_t_fp = forwardPropagation(net, X_t)
         training_error = err_funct(Y_t_fp, Y_t)
         err_train.append(training_error)
-        training_accuracy = networkAccuracy(Y_t_fp, Y_t)
-        acc_train.append(training_accuracy)
         
         Y_v_fp = forwardPropagation(net, X_v)
         validation_error = err_funct(Y_v_fp, Y_v)
         err_val.append(validation_error)
-        validation_accuracy = networkAccuracy(Y_t_fp, Y_t)
-        acc_val.append(validation_accuracy)
 
         epoch += 1
 
         print("Epoch: ", epoch, "Training error: ", training_error,
               "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
               "Validation error: ", validation_error,
-              "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+              "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v), end='')
+        print('\r', end='') 
+    print()
 
-    return err_train, err_val, acc_train, acc_val
+    return err_train, err_val
 
 def networkAccuracy(Y, Y_true):
     tot = Y_true.shape[1]
@@ -231,7 +241,7 @@ def networkAccuracy(Y, Y_true):
             true_positive += 1
     return true_positive / tot
     
-def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
+def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10, n_epoch=50):
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
     list_err_train = []
@@ -270,14 +280,14 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
                 XT = X[:, t_index]
                 YT = Y[:, t_index]
                 net = newNetwork(input_size=net_input_size, hidden_size=combination[0], output_size=net_output_size, list_act_funct=[])
-                err_train, err_val, acc_train, acc_val = trainResilientPropagation(net, 
-                                                                                   XT, YT, 
-                                                                                   XV, YV, 
-                                                                                   err_funct, 
-                                                                                   eta_pos=combination[1], 
-                                                                                   eta_neg=combination[2], 
-                                                                                   eta=eta, 
-                                                                                   n_epoch=20)
+                err_train, err_val = trainResilientPropagation(net, 
+                                                                XT, YT, 
+                                                                XV, YV, 
+                                                                err_funct, 
+                                                                eta_pos=combination[1], 
+                                                                eta_neg=combination[2], 
+                                                                eta=eta, 
+                                                                n_epoch=n_epoch)
                 print('\n', v+1, '/', k, ' Partizioni analizzate\n')
 
                 s_err_train += err_train[-1]
