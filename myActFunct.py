@@ -7,20 +7,12 @@ def identity(matrix, der=0):
     else:
         return matrix, 1
     
-# def tanh(matrix, der=0):
-#     x = np.exp(-2 * matrix)
-#     res = (1 - x)/(1 + x)
-#     if der == 0:
-#         return res
-#     else:
-#         return res, 1 - res*res # Derivata tangente iperbolica
-    
 def tanh(matrix, der=0):
     res = np.tanh(matrix)
     if der == 0:
         return res
     else:
-        return res, 1 - res*res # Derivata tangente iperbolica
+        return res, 1 - res*res 
     
 def sigm(matrix, der=0):
     res = 1 / (1 + np.exp(-matrix))

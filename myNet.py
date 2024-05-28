@@ -27,7 +27,7 @@ def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
     return net
 
 # OK, ma si può modificare ;)
-def setActFunct(depth, list_act_funct, act_def=act.tanh):
+def setActFunct(depth, list_act_funct, act_def=act.sigm):
     if not list_act_funct:
         return [act_def for _ in range(0, depth)]
     elif len(list_act_funct) == 1:
@@ -148,7 +148,6 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
 
     return err_train, err_val
 
-
 # modified RProp
 def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=1, alpha=1.2, beta=0.5):
     err_train = []
@@ -222,59 +221,6 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
 
     return err_train, err_val, acc_train, acc_val
 
-
-# def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=1, alpha=1.2, beta=0.5):
-#     err_train = []
-#     err_val = []
-#     Y_t_fp = forwardPropagation(net, X_t)
-#     training_error = err_funct(Y_t_fp, Y_t)
-#     err_train.append(training_error)
-#     Y_v_fp = forwardPropagation(net, X_v)
-#     validation_error = err_funct(Y_v_fp, Y_v)
-#     err_val.append(validation_error)
-    
-#     d  = net['Depth']
-#     epoch = 0
-#     eta_ij = eta * d
-
-#     while epoch < n_epoch:
-#         der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
-        
-#         for layer in range(d):
-#             neurons = net['Weights'][layer].shape
-#             for n in range(neurons[0]):
-#                 for i in range(neurons[1]):
-#                     if net['Weights'][layer][n][i] > 0:
-#                         eta_ij = min(eta_ij*alpha, eta_pos)
-#                     elif net['Weights'][layer][n][i] < 0:
-#                         eta_ij = max(eta_ij*beta, eta_neg)
-                    
-#                     net['Weights'][layer][n][i] = net['Weights'][layer][n][i] - (eta_ij * np.sign(der_weights[layer][n][i]))
-                
-#                 if net['Biases'][layer][n] > 0:
-#                         eta_ij = min(eta_ij*alpha, eta_pos)
-#                 elif net['Biases'][layer][n] < 0:
-#                         eta_ij = max(eta_ij*beta, eta_neg)
-                
-#                 net['Biases'][layer][n] = net['Biases'][layer][n] - (eta_ij * np.sign(der_biases[layer][n]))
-
-#         Y_t_fp = forwardPropagation(net, X_t)
-#         training_error = err_funct(Y_t_fp, Y_t)
-#         err_train.append(training_error)
-#         Y_v_fp = forwardPropagation(net, X_v)
-#         validation_error = err_funct(Y_v_fp, Y_v)
-#         err_val.append(validation_error)
-
-#         epoch += 1
-
-#         # Eventualmente aggiungere if
-#         print("Epoch: ", epoch, "\nTraining error: ", training_error,
-#             "\nAccuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-#             "\nValidation error: ", validation_error,
-#             "\nAccuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
-
-#     return err_train, err_val
-
 def networkAccuracy(Y, Y_true):
     tot = Y_true.shape[1]
     true_positive = 0
@@ -284,113 +230,14 @@ def networkAccuracy(Y, Y_true):
         if true_label == y_label:
             true_positive += 1
     return true_positive / tot
-
-# def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
-#     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
-#     samples_dim = Y.shape[1]
-#     list_err_train = []
-#     list_err_val = []
-#     if (samples_dim % k) == 0:
-#         X_partition = np.array_split(X, k, axis=1)
-#         Y_partition = np.array_split(Y, k, axis=1)
-#         i = 1
-#         n_combination = len(combinations)
-#         for combination in combinations:
-#             for v in range(k):
-#                 s_err_train = 0
-#                 s_err_val = 0
-#                 X_val = np.array(X_partition[v])
-#                 Y_val = np.array(Y_partition[v])
-#                 X_train = X_partition.copy()
-#                 Y_train = Y_partition.copy()
-#                 del X_train[v]
-#                 del Y_train[v]
-#                 X_train = np.concatenate(X_train, axis=1)
-#                 Y_train = np.concatenate(Y_train, axis=1)
-                
-#                 net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
-#                 err_train, err_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 50) # !!! 10 = n_epoch
-#                 print()
-#                 print(i, '/', n_combination, ' Combinazioni iperparametri analizzate')
-#                 print(v+1, '/', k, ' Partizioni analizzate\n')
-#                 s_err_train += err_train[-1]
-#                 s_err_val += err_val[-1]
-#             list_err_train.append(s_err_train/k)
-#             list_err_val.append(s_err_val/k)
-#             i += 1
-            
-#         return list_err_train, list_err_val, combinations
-#     else:
-#         raise Exception("Exception: each fold must be the same size")
-
-def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
-    combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
-    samples_dim = Y.shape[1]
-    list_err_train = []
-    list_err_val = []
-    list_acc_train = []#
-    list_acc_val = []#
-    s_err_train = 0
-    s_err_val = 0
-    s_acc_train = 0#
-    s_acc_val = 0#
-    if (samples_dim % k) == 0:
-        X_partition = np.array_split(X, k, axis=1)
-        Y_partition = np.array_split(Y, k, axis=1)
-        i = 1
-        n_combination = len(combinations)
-        for combination in combinations:
-            for v in range(k):
-                net = None
-                X_val = np.array(X_partition[v])
-                Y_val = np.array(Y_partition[v])
-                X_train = X_partition.copy()
-                Y_train = Y_partition.copy()
-                del X_train[v]
-                del Y_train[v]
-                X_train = np.concatenate(X_train, axis=1)
-                Y_train = np.concatenate(Y_train, axis=1)
-                
-                net = newNetwork(net_input_size, combination[0], net_output_size, list_act_funct=[])
-                err_train, err_val, acc_train, acc_val = trainResilientPropagation(net, X_train, Y_train, X_val, Y_val, err_funct, combination[1], combination[2], eta, 20) # !!! 10 = n_epoch, aggiunti avg
-                print()
-                print(i, '/', n_combination, ' Combinazioni iperparametri analizzate')
-                print(v+1, '/', k, ' Partizioni analizzate\n')
-                s_err_train += err_train[-1]
-                s_err_val += err_val[-1]
-                s_acc_train += acc_train[-1]#
-                s_acc_val += acc_val[-1]#
-
-            list_err_train.append(s_err_train/k)
-            list_err_val.append(s_err_val/k)
-            list_acc_train.append(s_acc_train / k)#
-            list_acc_val.append(s_acc_val / k)#
-
-            s_err_train = 0#
-            s_err_val = 0#
-            s_acc_train = 0#
-            s_acc_val = 0#
-            i += 1
-        print('List err train: ', list_err_train)
-        print('List err val: ', list_err_val)
-        print('List acc train: ', list_acc_train)#
-        print('List acc val: ', list_acc_val)#
-            
-        return list_err_train, list_err_val, list_acc_train, list_acc_val, combinations# aggiunti list_acc_train, list_acc_val
-    else:
-        raise Exception("Exception: each fold must be the same size")
     
 def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10):
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
     list_err_train = []
     list_err_val = []
-    list_acc_train = []#
-    list_acc_val = []#
-    s_err_train = 0
-    s_err_val = 0
-    s_acc_train = 0#
-    s_acc_val = 0#
+    # list_acc_train = []
+    # list_acc_val = []
     if (samples_dim % k) == 0:
         d = Y.shape[0]
         partitions = [np.ndarray(0,int) for i in range(k)]
@@ -405,17 +252,51 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
         count = 1
         n_combination = len(combinations)
         for combination in combinations:
+            net = newNetwork(input_size=net_input_size, hidden_size=combination[0], output_size=net_output_size, list_act_funct=[])
+            getInfo(net)
+            print('\nIperparametri selezionati:\n-hidden size ', combination[0], '\n-eta+ ', combination[1], '\n-eta- ', combination[2], '\n')
+            print(count, '/', n_combination, ' Combinazioni iperparametri analizzate\n')
             for v in range(k):
-                net = None
+                s_err_train = 0#
+                s_err_val = 0#
+                # s_acc_train = 0
+                # s_acc_val = 0
+                # net = None
                 XV = X[:, partitions[v]]
                 YV = Y[:, partitions[v]]
-                indT=np.ndarray(0,int)
-                for j in range(1, k):
-                    indT=np.append(indT, partitions[j])
-                XT = X
-                
+                train_partition = partitions.copy()
+                del train_partition[v]
+                t_index = np.concatenate(train_partition)
+                XT = X[:, t_index]
+                YT = Y[:, t_index]
+                net = newNetwork(input_size=net_input_size, hidden_size=combination[0], output_size=net_output_size, list_act_funct=[])
+                err_train, err_val, acc_train, acc_val = trainResilientPropagation(net, 
+                                                                                   XT, YT, 
+                                                                                   XV, YV, 
+                                                                                   err_funct, 
+                                                                                   eta_pos=combination[1], 
+                                                                                   eta_neg=combination[2], 
+                                                                                   eta=eta, 
+                                                                                   n_epoch=20)
+                print('\n', v+1, '/', k, ' Partizioni analizzate\n')
+
+                s_err_train += err_train[-1]
+                s_err_val += err_val[-1]
+                # s_acc_train += acc_train[-1]
+                # s_acc_val += acc_val[-1]
+
+            list_err_train.append(s_err_train/k)
+            list_err_val.append(s_err_val/k)
+            # list_acc_train.append(s_acc_train / k)#
+            # list_acc_val.append(s_acc_val / k)#
+            count += 1
+
+        print('List err train: ', list_err_train)
+        print('List err val: ', list_err_val)
+        # print('List acc train: ', list_acc_train)#
+        # print('List acc val: ', list_acc_val)#
             
-        return list_err_train, list_err_val, list_acc_train, list_acc_val, combinations
+        return list_err_train, list_err_val, combinations
 
     else:
         raise Exception("Exception: each fold must be the same size")
