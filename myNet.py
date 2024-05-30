@@ -30,8 +30,6 @@ def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
 def setActFunct(depth, list_act_funct, act_def=act.sigm):
     if not list_act_funct:
         return [act_def for _ in range(0, depth)]
-    elif len(list_act_funct) == 1:
-        return [list_act_funct[0] for _ in range(0, depth)]
     elif len(list_act_funct) < depth:
         act_list_1 = [list_act_funct[i] for i in range(0, len(list_act_funct))]
         act_list_2 = [act_def for _ in range(len(list_act_funct), depth)]
@@ -42,13 +40,13 @@ def setActFunct(depth, list_act_funct, act_def=act.sigm):
 # OK, ma si può modificare ;)
 def getInfo(net):
     hidden_layers = net['Depth'] - 1
-    print("Depth network: ", net["Depth"])
-    print("Number of input neurons: ", net["Weights"][0].shape[1])
-    print("Number of hidden layers: ", hidden_layers)
-    print("Number of hidden neurons: ", [net["Weights"][layer].shape[0] for layer in range(0, hidden_layers)])
-    print("Number of output neurons: ", net["Weights"][(net["Depth"] - 1)].shape[0])
-    print("Weights shape: ", [net["Weights"][i].shape for i in range(0, (1 + hidden_layers + 1) - 1)])
-    print("Activation functions: ", [(net["ActFun"][i]).__name__ for i in range(0, net["Depth"])])
+    print("Depth network:", net["Depth"])
+    print("Number of input neurons:", net["Weights"][0].shape[1])
+    print("Number of hidden layers:", hidden_layers)
+    print("Number of hidden neurons:", [net["Weights"][layer].shape[0] for layer in range(0, hidden_layers)])
+    print("Number of output neurons:", net["Weights"][(net["Depth"] - 1)].shape[0])
+    print("Weights shape:", [net["Weights"][i].shape for i in range(0, (1 + hidden_layers + 1) - 1)])
+    print("Activation functions:", [(net["ActFun"][i]).__name__ for i in range(0, net["Depth"])])
 
 def getBiasesList(net):
     return net['Biases']
@@ -124,10 +122,10 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
     d = net['Depth']
     epoch = 0
 
-    print("Epoch: ", epoch, "Training error: ", training_error,
-            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "Validation error: ", validation_error,
-            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+    print("Epoch:", epoch, "Training error:", training_error,
+            "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error:", validation_error,
+            "Accuracy Validation:", networkAccuracy(Y_v_fp, Y_v))
 
     while epoch < n_epoch:
         der_weights, der_biases= backPropagation(net, X_t, Y_t, err_funct)
@@ -146,10 +144,10 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
         epoch += 1
 
         # Eventualmente aggiungere if
-        print("Epoch: ", epoch, "Training error: ", training_error,
-            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "Validation error: ", validation_error,
-            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v), end='')
+        print("Epoch:", epoch, "Training error:", training_error,
+            "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error:", validation_error,
+            "Accuracy Validation:", networkAccuracy(Y_v_fp, Y_v), end='')
         print('\r', end='') 
     print()
     
@@ -181,10 +179,10 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
     epoch = 0
     eta_ij = eta * d  # Inizializziamo eta_ij per ogni layer
 
-    print("Epoch: ", epoch, "Training error: ", training_error,
-            "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-            "Validation error: ", validation_error,
-            "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v))
+    print("Epoch:", epoch, "Training error:", training_error,
+            "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t),
+            "Validation error:", validation_error,
+            "Accuracy Validation:", networkAccuracy(Y_v_fp, Y_v))
 
     while epoch < n_epoch:
         der_weights, der_biases = backPropagation(net, X_t, Y_t, err_funct)
@@ -222,10 +220,10 @@ def trainResilientPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, eta_pos=1, eta
 
         epoch += 1
 
-        print("Epoch: ", epoch, "Training error: ", training_error,
-              "Accuracy Training: ", networkAccuracy(Y_t_fp, Y_t),
-              "Validation error: ", validation_error,
-              "Accuracy Validation: ", networkAccuracy(Y_v_fp, Y_v), end='')
+        print("Epoch:", epoch, "Training error:", training_error,
+              "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t),
+              "Validation error:", validation_error,
+              "Accuracy Validation:", networkAccuracy(Y_v_fp, Y_v), end='')
         print('\r', end='') 
     print()
 
@@ -240,14 +238,18 @@ def networkAccuracy(Y, Y_true):
         if true_label == y_label:
             true_positive += 1
     return true_positive / tot
+
+def testAccuracy(net, test_X, test_Y):
+    net_Y = forwardPropagation(net, test_X)
+    return networkAccuracy(net_Y, test_Y)
     
-def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10, n_epoch=50):
+def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10, n_epoch=50):
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
     list_err_train = []
     list_err_val = []
-    # list_acc_train = []
-    # list_acc_val = []
+    list_acc_train = []
+    list_acc_test = []
     if (samples_dim % k) == 0:
         d = Y.shape[0]
         partitions = [np.ndarray(0,int) for i in range(k)]
@@ -262,15 +264,17 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
         count = 1
         n_combination = len(combinations)
         for combination in combinations:
+            s_acc_train = 0
+            s_acc_test = 0
             net = newNetwork(input_size=net_input_size, hidden_size=combination[0], output_size=net_output_size, list_act_funct=[])
             getInfo(net)
             print('\nIperparametri selezionati:\n-hidden size ', combination[0], '\n-eta+ ', combination[1], '\n-eta- ', combination[2], '\n')
-            print(count, '/', n_combination, ' Combinazioni iperparametri analizzate\n')
+            print(count, '/', n_combination, ' Combinazioni iperparametri\n')
             for v in range(k):
                 s_err_train = 0#
                 s_err_val = 0#
                 # s_acc_train = 0
-                # s_acc_val = 0
+                # s_acc_test = 0
                 # net = None
                 XV = X[:, partitions[v]]
                 YV = Y[:, partitions[v]]
@@ -292,21 +296,32 @@ def crossValidationKFold(X, Y, err_funct, net_input_size, net_output_size, list_
 
                 s_err_train += err_train[-1]
                 s_err_val += err_val[-1]
-                # s_acc_train += acc_train[-1]
+                acc_train = testAccuracy(net, X, Y)
+                acc_test = testAccuracy(net, test_X, test_Y)
+                s_acc_train += acc_train
+                s_acc_test += acc_test
+                print('Accuracy train set partizione:', acc_train)
+                print('Accuracy test set partizione:', acc_test)
+                print()
                 # s_acc_val += acc_val[-1]
 
             list_err_train.append(s_err_train/k)
             list_err_val.append(s_err_val/k)
-            # list_acc_train.append(s_acc_train / k)#
-            # list_acc_val.append(s_acc_val / k)#
+            avg_acc_train = s_acc_train/k
+            avg_acc_test = s_acc_test/k
+            print('Combinazione numero', count, 'accuracy train set:', avg_acc_train)
+            print('Combinazione numero', count, 'accuracy test set:', avg_acc_test)
+            print()
+            list_acc_train.append(avg_acc_train)
+            list_acc_test.append(avg_acc_test)
             count += 1
 
-        print('List err train: ', list_err_train)
-        print('List err val: ', list_err_val)
-        # print('List acc train: ', list_acc_train)#
-        # print('List acc val: ', list_acc_val)#
+        print('List loss train:', list_err_train)
+        print('List loss val:', list_err_val)
+        print('List avg acc train: ', list_acc_train)#
+        print('List avg acc test: ', list_acc_test)#
             
-        return list_err_train, list_err_val, combinations
+        return list_err_train, list_err_val, list_acc_train, list_acc_test, combinations
 
     else:
         raise Exception("Exception: each fold must be the same size")
@@ -325,17 +340,36 @@ def myPlot(list_err_train, list_err_val, combinations):
     # plt.plot(figsize=(20,10))
     plt.show()
 
-def myPlot2(list_acc_train, list_acc_val, combinations):
+def myPlot2(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations):
     x_plot_lab = []
     for c in combinations:
         x_plot_lab.append(str(c))
-    x_axis = np.arange(len(x_plot_lab))
-    plt.figure(figsize=(12, 6)) 
-    plt.bar(x_axis -0.1, list_acc_train, width=0.2, color='r', label='Train Accuracy')
-    plt.bar(x_axis +0.1, list_acc_val, width=0.2, color='g', label='Validation Accuracy')
+
+    fig, axs = plt.subplots(1, 2)
+    axs[0].plot(x_plot_lab, list_err_train, color='r', label='Train loss')
+    axs[0].plot(x_plot_lab, list_err_val, color='g', label='Validation loss')
+    axs[0].set_title("Loss")
+
+    axs[1].set_title("Accuracy")
+    axs[1].plot(x_plot_lab, list_acc_train, color='r', label='Train accuracy')
+    axs[1].plot(x_plot_lab, list_acc_test, color='g', label='Test accuracy')
+    fig.tight_layout()
+    plt.show()
+
+def myPlot3(list_train, list_test, combinations, f=0):
+    x_plot_lab = []
+    for c in combinations:
+        x_plot_lab.append(str(c))
+    plt.figure(figsize=(18, 10)) 
+    if(f == 0):
+        plt.plot(x_plot_lab, list_train, color='r', label='Train loss')
+        plt.plot(x_plot_lab, list_test, color='g', label='Validation loss')
+    else:
+        plt.plot(x_plot_lab, list_train, color='r', label='Train accuracy')
+        plt.plot(x_plot_lab, list_test, color='g', label='Test accuracy')
     plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
-    plt.ylim(0, 1)
     plt.grid(True)
     plt.legend()
-    plt.title('Accuracy')
+    plt.title('Hyperparameter Tuning')
+    # plt.plot(figsize=(20,10))
     plt.show()

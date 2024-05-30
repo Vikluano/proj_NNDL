@@ -1,6 +1,6 @@
 import numpy as np
 
-data_path_1 = 'C:/Users/Pietro20/Desktop/'
+data_path_1 = 'C:/Users/Pietro20/Desktop/mnistDataset/'
 data_path_2 = 'C:/Users/anton/Downloads/Telegram_Desktop/'
 
 def loadDataset(datapath='C:/Users/Pietro20/Desktop/'):
