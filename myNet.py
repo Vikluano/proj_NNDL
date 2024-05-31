@@ -21,13 +21,13 @@ def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):
     act_funct = setActFunct(len(weights), list_act_funct)
     biases.append(sigma * np.random.normal(size = [output_size, 1]))
     weights.append(sigma * np.random.normal(size = [output_size, prev_layer]))
-    act_funct.append(act.identity)
+    act_funct.append(act.tanh)
     net = {'Weights':weights,'Biases':biases,'ActFun':act_funct,'Depth':len(weights)}
     
     return net
 
 # OK, ma si può modificare ;)
-def setActFunct(depth, list_act_funct, act_def=act.sigm):
+def setActFunct(depth, list_act_funct, act_def=act.tanh):
     if not list_act_funct:
         return [act_def for _ in range(0, depth)]
     elif len(list_act_funct) < depth:
@@ -325,22 +325,8 @@ def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_ou
 
     else:
         raise Exception("Exception: each fold must be the same size")
-
-def myPlot(list_err_train, list_err_val, combinations):
-    x_plot_lab = []
-    for c in combinations:
-        x_plot_lab.append(str(c))
-    plt.figure(figsize=(18, 10)) 
-    plt.plot(x_plot_lab, list_err_train, color='r', label='Train Error')
-    plt.plot(x_plot_lab, list_err_val, color='g', label='Validation Error')
-    plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
-    plt.grid(True)
-    plt.legend()
-    plt.title('Hyperparameter Tuning')
-    # plt.plot(figsize=(20,10))
-    plt.show()
-
-def myPlot2(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations):
+    
+def myPlot(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations):
     x_plot_lab = []
     for c in combinations:
         x_plot_lab.append(str(c))
@@ -354,22 +340,4 @@ def myPlot2(list_err_train, list_err_val, list_acc_train, list_acc_test, combina
     axs[1].plot(x_plot_lab, list_acc_train, color='r', label='Train accuracy')
     axs[1].plot(x_plot_lab, list_acc_test, color='g', label='Test accuracy')
     fig.tight_layout()
-    plt.show()
-
-def myPlot3(list_train, list_test, combinations, f=0):
-    x_plot_lab = []
-    for c in combinations:
-        x_plot_lab.append(str(c))
-    plt.figure(figsize=(18, 10)) 
-    if(f == 0):
-        plt.plot(x_plot_lab, list_train, color='r', label='Train loss')
-        plt.plot(x_plot_lab, list_test, color='g', label='Validation loss')
-    else:
-        plt.plot(x_plot_lab, list_train, color='r', label='Train accuracy')
-        plt.plot(x_plot_lab, list_test, color='g', label='Test accuracy')
-    plt.xlabel('Hyperparameter tuning: hidden size, eta+, eta-')
-    plt.grid(True)
-    plt.legend()
-    plt.title('Hyperparameter Tuning')
-    # plt.plot(figsize=(20,10))
     plt.show()
