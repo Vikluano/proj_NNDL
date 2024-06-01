@@ -1,13 +1,11 @@
 import numpy as np
 
 data_path_1 = 'C:/Users/Pietro20/Desktop/proj_NNDL/mnistDataset/'
-data_path_2 = 'C:/Users/anton/Downloads/Telegram_Desktop/'
+data_path_2 = 'C:/Users/anton/git_workspace/proj_NNDL/mnistDataset/'
 
 def loadDataset(datapath='C:/Users/Pietro20/Desktop/'):
     train_set = np.loadtxt(datapath + "mnist_train.csv", delimiter=',', skiprows=1)
     test_set = np.loadtxt(datapath + "mnist_test.csv", delimiter=',', skiprows=1)
-    # train_set = np.loadtxt(datapath + "mnist_sample_train.csv", delimiter=',')
-    # test_set = np.loadtxt(datapath + "mnist_sample_test.csv", delimiter=',')
 
     train_X_norm = (train_set[:, 1:]) / 255 # Tutte le colonne tranne la prima
     test_X_norm = (test_set[:, 1:]) / 255
