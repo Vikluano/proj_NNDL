@@ -1,7 +1,9 @@
+import numpy as np
 import myNet as n
 import myDataset as d
 import myErrorFunct as ef
 from itertools import product
+import matplotlib.pyplot as plt
 
 def runCrossValid(datapath):
     train_X, test_X, train_lab, test_lab = d.loadDataset(datapath)
@@ -17,7 +19,7 @@ def runCrossValid(datapath):
                                                                                 list_eta_pos=[0.001], 
                                                                                 list_eta_neg=[0.0001], 
                                                                                 k=10,
-                                                                                n_epoch=100)
+                                                                                n_epoch=150)
     n.myPlot(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations)
 
 def runResilientTrain(datapath):
@@ -30,11 +32,16 @@ def runResilientTrain(datapath):
                                 eta_pos=0.001,
                                 eta_neg=0.0001,
                                 eta=0.001,
-                                n_epoch=100)
+                                n_epoch=150)
     n.getInfo(net)
     print('Accuracy train', n.testAccuracy(net, train_X, train_lab))
     print('Accuracy test', n.testAccuracy(net, test_X, test_lab))
 
+    y_pred=n.forwardPropagation(net, test_X[:,400:401])
+    y_pred=ef.softMax(y_pred)
+    print('Previsione y:', y_pred)
+    print(test_lab[:,400:401])
+    
 if __name__ == '__main__':
-    runCrossValid(d.data_path_2)
-    # runResilientTrain(d.data_path_2)
+    # runCrossValid(d.data_path_1)
+    runResilientTrain(d.data_path_1)
