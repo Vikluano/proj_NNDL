@@ -1,6 +1,5 @@
 import numpy as np
 
-# Matrix -> input
 def identity(matrix, der=0):
     if der == 0:
         return matrix

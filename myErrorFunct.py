@@ -2,7 +2,7 @@ import numpy as np
 
 def softMax(y):
     yExp = np.exp(y - y.max(0))
-    res = yExp / sum(yExp) # sum(iterable, start)
+    res = yExp / sum(yExp)
     return res
 
 def crossEntropy(y, true_y, der=0):

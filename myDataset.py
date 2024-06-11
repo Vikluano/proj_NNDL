@@ -7,10 +7,10 @@ def loadDataset(datapath='C:/Users/Pietro20/Desktop/'):
     train_set = np.loadtxt(datapath + "mnist_train.csv", delimiter=',', skiprows=1)
     test_set = np.loadtxt(datapath + "mnist_test.csv", delimiter=',', skiprows=1)
 
-    train_X_norm = (train_set[:, 1:]) / 255 # Tutte le colonne tranne la prima
+    train_X_norm = (train_set[:, 1:]) / 255 
     test_X_norm = (test_set[:, 1:]) / 255
 
-    train_Y = train_set[:, 0] # Solo la prima colonna
+    train_Y = train_set[:, 0]
     test_Y = test_set[:, 0]
 
     train_lab = oneHotEnc(train_Y)
@@ -19,8 +19,8 @@ def loadDataset(datapath='C:/Users/Pietro20/Desktop/'):
     return train_X_norm.transpose(), test_X_norm.transpose(), train_lab.transpose(), test_lab.transpose()
 
 def oneHotEnc(labels_set):
-    row = len(labels_set) # Numero di array
-    col = 10 # Numero di classi (0, ..., 9)
+    row = len(labels_set)
+    col = 10 
     
     sparse_matrix = np.zeros((row, col), dtype=int)
     labels = labels_set.astype(int)
