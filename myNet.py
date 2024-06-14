@@ -4,6 +4,9 @@ from itertools import product
 import matplotlib.pyplot as plt
 import myErrorFunct as ef
 
+valuation_path_1 = 'C:/Users/Pietro20/Desktop/proj_NNDL/mnistDataset/'
+valuation_path_2 = 'C:/Users/anton/git_workspace/hyperparameter_tuning.txt'
+
 def newNetwork(input_size, hidden_size, output_size, list_act_funct=[]):    
     sigma = 0.1
     biases = []
@@ -150,7 +153,7 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
     
     return err_train, err_val
 
-def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1.2, eta_neg=0.5, eta=0.1, n_epoch=1, alpha=0.001, beta=0.0001):
+def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1.2, eta_neg=0.5, eta=0.1, n_epoch=1, alpha=1, beta=0.0001):
     err_train = []
     err_val = []
     der_w_list = []
@@ -239,8 +242,13 @@ def networkAccuracy(Y, Y_true):
 def testAccuracy(net, test_X, test_Y):
     net_Y = forwardPropagation(net, test_X)
     return networkAccuracy(net_Y, test_Y)
+
+def append_to_file(filename, *numbers):
+    with open(filename, 'a') as file:
+        formatted_numbers = ' '.join(f"{number}" for number in numbers)
+        file.write(formatted_numbers + '\n')
     
-def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10, n_epoch=50):
+def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_output_size, list_hidden_size=[], list_eta_pos=[], list_eta_neg=[], eta=0.1, k=10, n_epoch=50, write_on_file=False):
     combinations = list(product(list_hidden_size, list_eta_pos, list_eta_neg))
     samples_dim = Y.shape[1]
     list_err_train = []
@@ -298,8 +306,10 @@ def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_ou
                 print('Accuracy test set partizione:', acc_test)
                 print()
 
-            list_err_train.append(s_err_train/k)
-            list_err_val.append(s_err_val/k)
+            avg_err_train = s_err_train/k
+            avg_err_val = s_err_val/k            
+            list_err_train.append(avg_err_train)
+            list_err_val.append(avg_err_val)
             avg_acc_train = s_acc_train/k
             avg_acc_test = s_acc_test/k
             print('Combinazione numero', count, 'accuracy train set:', avg_acc_train)
@@ -307,6 +317,8 @@ def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_ou
             print()
             list_acc_train.append(avg_acc_train)
             list_acc_test.append(avg_acc_test)
+            if write_on_file:
+                append_to_file(valuation_path_2, avg_acc_train, avg_acc_test, avg_err_train, avg_err_val)
             count += 1
 
         print('List loss train:', list_err_train)

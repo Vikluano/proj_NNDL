@@ -18,8 +18,9 @@ def runCrossValid(datapath):
                                                                                 eta=0.001,
                                                                                 list_eta_pos=[1.1, 1.2, 1.3], 
                                                                                 list_eta_neg=[0.5, 0.6, 0.8],
-                                                                                k=10,
-                                                                                n_epoch=100)
+                                                                                k=5,
+                                                                                n_epoch=10,
+                                                                                write_on_file=True)
     n.myPlot(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations)
 
 def runResilientTrain(datapath):
