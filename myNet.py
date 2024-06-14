@@ -150,11 +150,9 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
     
     return err_train, err_val
 
-def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1, eta_neg=0.01, eta=0.1, n_epoch=1, alpha=1.2, beta=0.5):
+def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1.2, eta_neg=0.5, eta=0.1, n_epoch=1, alpha=0.001, beta=0.0001):
     err_train = []
     err_val = []
-    acc_train = []
-    acc_val = []
     der_w_list = []
     der_b_list = []
     
@@ -164,17 +162,12 @@ def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.cr
 
     Y_t_fp = forwardPropagation(net, X_t)
     training_error = err_funct(Y_t_fp, Y_t)
-    err_train.append(training_error)
-    training_accuracy = networkAccuracy(Y_t_fp, Y_t)
-    acc_train.append(training_accuracy)        
-
+    err_train.append(training_error)        
 
     if X_v is not None:
         Y_v_fp = forwardPropagation(net, X_v)
         validation_error = err_funct(Y_v_fp, Y_v)
         err_val.append(validation_error)
-        validation_accuracy = networkAccuracy(Y_t_fp, Y_t)
-        acc_val.append(validation_accuracy)
 
         print("Epoch:", epoch, "Training error:", training_error,
                 "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t),
@@ -196,17 +189,17 @@ def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.cr
                     for i in range(neurons[1]):
                         prod_der_w = der_w_list[epoch-1][layer][n][i] * der_w_list[epoch][layer][n][i]
                         if prod_der_w > 0:
-                            eta_ij = min(eta_ij * alpha, eta_pos)
+                            eta_ij = min(eta_ij * eta_pos, alpha)
                         elif prod_der_w < 0:
-                            eta_ij = max(eta_ij * beta, eta_neg)
+                            eta_ij = max(eta_ij * eta_neg, beta)
                         
                         net['Weights'][layer][n][i] -= eta_ij * np.sign(der_weights[layer][n][i])
                     
                     prod_der_b = der_b_list[epoch-1][layer][n] * der_b_list[epoch][layer][n]
                     if prod_der_b > 0:
-                        eta_ij = min(eta_ij * alpha, eta_pos)
+                        eta_ij = min(eta_ij * eta_pos, alpha)
                     elif prod_der_b < 0:
-                        eta_ij = max(eta_ij * beta, eta_neg)
+                        eta_ij = max(eta_ij * eta_neg, beta)
                     
                     net['Biases'][layer][n] -= eta_ij * np.sign(der_biases[layer][n])
 

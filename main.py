@@ -14,12 +14,12 @@ def runCrossValid(datapath):
                                                                                 err_funct=ef.crossEntropy, 
                                                                                 net_input_size=784, 
                                                                                 net_output_size=10, 
-                                                                                list_hidden_size=[128, [256, 64]], 
+                                                                                list_hidden_size=[64, 128, 256], 
                                                                                 eta=0.001,
-                                                                                list_eta_pos=[0.001], 
-                                                                                list_eta_neg=[0.0001], 
+                                                                                list_eta_pos=[1.1, 1.2, 1.3], 
+                                                                                list_eta_neg=[0.5, 0.6, 0.8],
                                                                                 k=10,
-                                                                                n_epoch=150)
+                                                                                n_epoch=100)
     n.myPlot(list_err_train, list_err_val, list_acc_train, list_acc_test, combinations)
 
 def runResilientTrain(datapath):
@@ -43,5 +43,5 @@ def runResilientTrain(datapath):
     print(test_lab[:,400:401])
     
 if __name__ == '__main__':
-    # runCrossValid(d.data_path_1)
-    runResilientTrain(d.data_path_1)
+    runCrossValid(d.data_path_2)
+    #runResilientTrain(d.data_path_1)
