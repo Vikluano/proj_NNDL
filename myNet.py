@@ -153,7 +153,7 @@ def trainBackPropagation(net, X_t, Y_t, X_v, Y_v, err_funct, n_epoch=1, eta=0.1)
     
     return err_train, err_val
 
-def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1.2, eta_neg=0.5, eta=0.1, n_epoch=1, alpha=1, beta=0.0001):
+def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.crossEntropy, eta_pos=1.2, eta_neg=0.5, eta=0.1, n_epoch=1, alpha=0.001, beta=0.0001):
     err_train = []
     err_val = []
     der_w_list = []
@@ -226,8 +226,10 @@ def trainResilientPropagation(net, X_t, Y_t, X_v=None, Y_v=None, err_funct=ef.cr
                 "Accuracy Training:", networkAccuracy(Y_t_fp, Y_t), end='')
         print('\r', end='') 
     print()
-
-    return err_train, err_val
+    if X_v is not None:
+        return err_train, err_val
+    else:
+        return err_train
 
 def networkAccuracy(Y, Y_true):
     tot = Y_true.shape[1]
@@ -318,7 +320,7 @@ def crossValidationKFold(X, Y, test_X, test_Y, err_funct, net_input_size, net_ou
             list_acc_train.append(avg_acc_train)
             list_acc_test.append(avg_acc_test)
             if write_on_file:
-                append_to_file(valuation_path_2, avg_acc_train, avg_acc_test, avg_err_train, avg_err_val)
+                append_to_file(valuation_path_2, count, avg_acc_train, avg_acc_test, avg_err_train, avg_err_val)
             count += 1
 
         print('List loss train:', list_err_train)
